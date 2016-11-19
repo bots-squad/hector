@@ -20,6 +20,23 @@ const GitHubClient = require('./libs/octocat.js').GitHubClient;
   - CI_HTTP_PORT
   - BOT_NOTIFICATION_URL
 - add a webhook in GitHub settings
+- add a file named `hector-jobs.js` to the master branch:
+
+```javascript
+function integration(options) {
+  console.log(__dirname);
+  let cmds = [
+      `cd ${__dirname};`
+    , `npm --cache-min 9999999 install; `
+    , `npm test`
+  ];
+  return cmds.join('');
+}
+
+module.exports = {
+  integration: integration
+}
+```
 - run hector: ./hector.js or node hector.js
 */
 
@@ -110,8 +127,6 @@ app.post('/ci', (req, res) => {
             , `git clone ${repository_url}; `
             , `cd ${repository_name}; `
             , `git checkout ${branch}; `
-            , `npm --cache-min 9999999 install; `
-            , `npm test`
           ].join('');
 
           // === Execute the commands list ===
@@ -123,55 +138,84 @@ app.post('/ci', (req, res) => {
           // - and 1 or higher for failed executions.
           exec(cmd, (code, stdout, stderr) => {
             switch (code) {
-              case 0: // 🍾 🍻 ✨ ☀️
-                let messageOK = ('😀 integration 👍');
-                console.info(messageOK)
+              case 0: // 🍾 🍻 ✨ ☀️ repository "mounted"
 
-                fs.writeFile(`${tmp_directory}-stdout.log.txt`, stdout, (err) => {
-                   if (err) { console.error(err); }
-                });
+                // TODO: test the code execution (try catch)
+                exec(require(`./${tmp_directory}/${repository_name}/hector-jobs.js`).integration({}), (code, stdout, stderr) => {
 
-                // update status
-                githubCli.postData({path:statuses_url, data:{
-                    state: "success"
-                  , description: "Hi, I'm Hector :)"
-                  , context: "[Hector] CI Server"
-                  , target_url: `http://${hostname}:${process.env.CI_HTTP_PORT}/${random_path}-stdout.log.txt`
-                }});
+                  switch (code) {
+                    case 0:
+                      let messageOK = ('😀 integration 👍');
+                      console.info(messageOK);
 
-                // ⚠️⚠️⚠️ now, here you could notify a bot, create issue ... What ever
-                if (process.env.BOT_NOTIFICATION_URL) {
-                  postMessage(process.env.BOT_NOTIFICATION_URL, messageOK);
-                }
+                      fs.writeFile(`${tmp_directory}-stdout.log.txt`, stdout, (err) => {
+                         if (err) { console.error(err); }
+                      });
+
+                      // update status
+                      githubCli.postData({path:statuses_url, data:{
+                          state: "success"
+                        , description: "Hi, I'm Hector :)"
+                        , context: "[Hector] CI Server"
+                        , target_url: `http://${hostname}:${process.env.CI_HTTP_PORT}/${random_path}-stdout.log.txt`
+                      }});
+
+                      // ⚠️⚠️⚠️ now, here you could notify a bot, create issue ... What ever
+                      if (process.env.BOT_NOTIFICATION_URL) {
+                        postMessage(process.env.BOT_NOTIFICATION_URL, messageOK);
+                      }
+
+                      break;
+                    default:
+                      let messageKO = `😡 integration 👎`;
+                      console.error(messageKO);
+
+                      fs.writeFile(`${tmp_directory}-stderr.log`, stderr, (err) => {
+                        if (err) { console.error(err); }
+                      });
+
+                      fs.writeFile(`${tmp_directory}-stdout.log.txt`, stdout, (err) => {
+                         if (err) { console.error(err); }
+                      });
+
+                      // update status
+                      githubCli.postData({path:statuses_url, data:{
+                          state: "error"
+                        , description: "Hi, I'm Hector :)"
+                        , context: "[Hector] CI Server"
+                        , target_url: `http://${hostname}:${process.env.CI_HTTP_PORT}/${random_path}-stdout.log.txt`
+                      }});
+
+                      // ⚠️⚠️⚠️ now, here you could notify a bot, create issue ... What ever
+                      if (process.env.BOT_NOTIFICATION_URL) {
+                        postMessage(process.env.BOT_NOTIFICATION_URL, messageKO);
+                      }
+
+                  } // end of switch
+
+                  // remove directory
+                  exec(`rm -rf ${tmp_directory}`)
+
+                }) // end of exec
 
                 break;
-              default: // Ouch 🔥 💥 ⚡️
-                let messageKO = `😡 integration 👎`;
-                console.error(messageKO);
+              default: // Ouch 🔥 💥 ⚡️ repository not "mounted"
 
-                fs.writeFile(`${tmp_directory}-stderr.log`, stderr, (err) => {
-                  if (err) { console.error(err); }
-                });
+              // update status
+              githubCli.postData({path:statuses_url, data:{
+                  state: "failure"
+                , description: "Hi, I'm Hector :)"
+                , context: "[Hector] CI Server"
+                , target_url: `http://${hostname}:${process.env.CI_HTTP_PORT}`
+              }});
 
-                fs.writeFile(`${tmp_directory}-stdout.log.txt`, stdout, (err) => {
-                   if (err) { console.error(err); }
-                });
-                // update status
-                githubCli.postData({path:statuses_url, data:{
-                    state: "error"
-                  , description: "Hi, I'm Hector :)"
-                  , context: "[Hector] CI Server"
-                  , target_url: `http://${hostname}:${process.env.CI_HTTP_PORT}/${random_path}-stdout.log.txt`
-                }});
-
-                // ⚠️⚠️⚠️ now, here you could notify a bot, create issue ... What ever
-                if (process.env.BOT_NOTIFICATION_URL) {
-                  postMessage(process.env.BOT_NOTIFICATION_URL, messageKO);
-                }
+              // ⚠️⚠️⚠️ now, here you could notify a bot, create issue ... What ever
+              if (process.env.BOT_NOTIFICATION_URL) {
+                postMessage(process.env.BOT_NOTIFICATION_URL, "🙀 Houston? We have a problem!");
+              }
 
             } // end of switch
-            // remove directory
-            exec(`rm -rf ${tmp_directory}`)
+
           }); // end of exec
 
         }) // and of then
@@ -194,6 +238,7 @@ app.post('/ci', (req, res) => {
           if (process.env.BOT_NOTIFICATION_URL) {
             postMessage(process.env.BOT_NOTIFICATION_URL, message);
           }
+
         }
       }
       break;
