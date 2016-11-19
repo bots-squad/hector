@@ -43,7 +43,7 @@ module.exports = {
   deployment: deployment
 }
 ```
-- run hector: ./hector.js or node hector.js
+- run hector: ./hector-deployment.js or node hector-deployment.js
 */
 
 

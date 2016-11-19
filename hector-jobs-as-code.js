@@ -37,7 +37,7 @@ module.exports = {
   integration: integration
 }
 ```
-- run hector: ./hector.js or node hector.js
+- run hector: ./hector-jobs-as-code.js or node hector-jobs-as-code.js
 */
 
 
