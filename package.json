@@ -1,0 +1,26 @@
+{
+  "name": "hector",
+  "version": "1.0.0",
+  "description": "CI and CD server",
+  "main": "hector.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bots-squad/hector.git"
+  },
+  "author": "k33g",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/bots-squad/hector/issues"
+  },
+  "homepage": "https://github.com/bots-squad/hector#readme",
+  "dependencies": {
+    "body-parser": "^1.15.2",
+    "express": "^4.14.0",
+    "node-fetch": "^1.6.3",
+    "shelljs": "^0.7.5",
+    "uuid": "^3.0.0"
+  }
+}
