@@ -3,6 +3,7 @@ npm-debug.log
 .idea/
 .DS_Store
 go.js
+go.old.js
 clones/*.txt
 clones/*.log
 sandbox/
