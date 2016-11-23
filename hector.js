@@ -63,7 +63,9 @@ app.post('/ci', (req, res) => {
 
   switch (event) {
     case "push":
-      if(req.body.deleted == false) {
+      // get the current branch name
+      let branch = req.body.ref.split("/").pop();
+      if(req.body.deleted == false && branch!=="gh-pages") {
         // === get data from the `PushEvent` payload
         // get the SHA (Secure Hash Algorithm) of the most recent commit on ref after the push
         // see https://developer.github.com/v3/activity/events/types/#events-api-payload-22
@@ -76,7 +78,7 @@ app.post('/ci', (req, res) => {
         let statuses_url = `/repos/${owner}/${req.body.repository.name}/statuses/${after}`;
 
         // get the current branch name
-        let branch = req.body.ref.split("/").pop();
+        //let branch = req.body.ref.split("/").pop();
 
         // get the url of the repository (to clone the repository)
         let repository_url = req.body.repository.clone_url;
