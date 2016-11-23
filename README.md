@@ -32,7 +32,8 @@ function integration(options) {
 }
 
 function deployment(options) {
-  console.log("Docker deployment!")
+  console.log("🐳 🐳 🐳 Docker deployment!")
+
   let cmds = [
       `cd ${__dirname};`
     , `docker stop demo-web-container;`
@@ -59,13 +60,14 @@ MAINTAINER @k33g_org
 ENV EXPRESS_PORT 9999
 
 RUN mkdir -p /home/webapp
+ADD package.json /home/webapp/package.json
+
+WORKDIR home/webapp
+RUN npm install
 
 ADD . /home/webapp
 
 EXPOSE 9999
 
-WORKDIR home/webapp
-
-RUN npm install
 CMD node app.js
 ```
