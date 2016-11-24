@@ -12,6 +12,10 @@ CI &amp; CD with JavaScript
   - `GITHUB_API_URL`
   - `CI_HTTP_PORT`
   - `BOT_NOTIFICATION_URL`
+
+### If you use :octocat:
+
+- set the environment variable `HECTOR_PLUGIN_PATH` eg: `process.env["HECTOR_PLUGIN_PATH"] = "./plugins/github"`
 - add a webhook in GitHub settings (http://hostname:port/ci)
 - add a file named `hector-jobs.js` to the master branch
 - add a Dockerfile to the master branch

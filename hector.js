@@ -1,16 +1,10 @@
 #!/usr/bin/env node
-require('shelljs/global');
 const fs = require("fs");
-const uuid = require('uuid');
-const fetch = require('node-fetch');
 const express = require('express');
 const bodyParser = require('body-parser');
-
 const postMessage = require('./libs/helpers.js').postMessage;
 
-
-const whenEvent = require('./plugins/github/app.js').whenEvent;
-
+const whenEvent = require(`${process.env.HECTOR_PLUGIN_PATH}/app.js`).whenEvent;
 
 /*
 Express application
@@ -21,8 +15,8 @@ app.use(bodyParser.urlencoded({extended: false}));
 app.use(express.static('clones'));
 
 /*
-this route is called from the DVCS (GitHub)
-(see webhook in GitHub settings)
+this route is called from the DVCS (eg GitHub)
+(see webhooks in your DVCS settings)
 */
 app.post('/ci', (req, res) => {
 
