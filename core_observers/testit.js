@@ -1,13 +1,14 @@
 const Observer = require(`./observers`).Observer;
+const Broker = require(`./observers`).Broker;
 
 class ExecutorObserver extends Observer {
-  constructor() {
-    super()
+  constructor(broker) {
+    super(broker)
   }
 }
-
-let november = new ExecutorObserver()
-let december = new ExecutorObserver()
+let broker = new Broker()
+let november = new ExecutorObserver(broker)
+let december = new ExecutorObserver(broker)
 
 december.on("yo", (data)=>{
   console.log("coucou", data)

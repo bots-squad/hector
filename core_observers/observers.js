@@ -1,9 +1,9 @@
 const EventEmitter = require('events').EventEmitter;
 
-const broker = new EventEmitter()
+class Broker extends EventEmitter { }
 
 class Observer {
-  constructor() {
+  constructor(broker) {
     this.broker = broker;
   }
   on(message, work) { this.broker.on(message, work); }
@@ -11,5 +11,6 @@ class Observer {
 }
 
 module.exports = {
-  Observer: Observer
+    Observer: Observer
+  , Broker: Broker
 };
