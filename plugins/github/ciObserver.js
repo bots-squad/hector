@@ -61,6 +61,8 @@ let initialize = (broker) => {
 
   ciObserver.on('deployment_ok', (pushInformations) => {
     ciObserver.emit("message", {message: "👏 🐼 ✨ 🍾 Deployment is successful!!!", from: "ciObserver"});
+    ciObserver.emit("message", {message: process.env.URL_WEB_SITE, from: "ciObserver"});
+
   });
 
   ciObserver.on('integration_ko', (pushInformations) => {

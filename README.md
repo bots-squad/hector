@@ -12,6 +12,7 @@ CI &amp; CD with JavaScript
   - `GITHUB_API_URL`
   - `CI_HTTP_PORT`
   - `BOT_NOTIFICATION_URL`
+  - `URL_WEB_SITE` (url of the deployed web site)
 
 ### If you use :octocat:
 
