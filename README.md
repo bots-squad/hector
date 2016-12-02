@@ -3,6 +3,7 @@
 CI &amp; CD with JavaScript
 
 > WIP :construction:
+> Next: create plugins
 
 ## Setup Hector
 
