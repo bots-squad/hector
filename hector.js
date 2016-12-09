@@ -31,6 +31,10 @@ this route is called from the DVCS (eg GitHub)
 */
 app.post('/ci', (req, res) => {
   broker.emit('ci_event', req)
+  /*
+    # messages
+    eventsObserver listening on `ci_event`
+  */
   res.status(201).end();
 });
 

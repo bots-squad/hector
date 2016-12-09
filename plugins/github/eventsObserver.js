@@ -40,7 +40,10 @@ let isPullRequestMerged = (req) => {
 
 let initialize = (broker) => {
   let eventsObserver = new Observer(broker)
-
+  /*
+    # messages
+    broker emits on `ci_event`
+  */
   eventsObserver.on('ci_event', req => {
     // capture GitHub event
     let event = req.headers['x-github-event'];
@@ -49,6 +52,10 @@ let initialize = (broker) => {
         let pushInformations = getPushInformations(req);
         if (pushInformations) {
           eventsObserver.emit("push", pushInformations);
+          /*
+            # messages
+            ciObserver listening on `push`
+          */
         }
         break;
       case "pull_request":
@@ -56,12 +63,28 @@ let initialize = (broker) => {
           // this will trigger a push event on the "production" branch
           let message = `👍 A pull request was merged! A deployment should start now...`;
           eventsObserver.emit("message", {message: message, from:"eventsObserver"});
-          // nobody listen on this event ... for the moment
+          /*
+            # messages
+            botObserver listening on `message`
+            messenger listening on `message` (console)
+          */
+
           eventsObserver.emit("pull_request_merged", message);
+          /*
+            # messages
+            nobody listen on this event ... for the moment
+          */
+
         }
         break;
       default:
         eventsObserver.emit("failure", {message: "🙀 Houston? We have a problem!", from: "eventsObserver"});
+        /*
+          # messages
+
+          botObserver listening on `failure`
+          messenger listening on `failure` (console)
+        */
     }
   });
   return eventsObserver;
