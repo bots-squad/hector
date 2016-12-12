@@ -5,6 +5,10 @@ const Observer = require(`../../core_observers/observers`).Observer;
 let initialize = (broker) => {
   let gitObserver = new Observer(broker)
 
+  /*
+    # messages
+    ciObserver emits on `clone_and_checkout`
+  */
   gitObserver.on('clone_and_checkout', (pushInformations) => {
 
     let random_path = uuid.v4();
@@ -33,9 +37,17 @@ let initialize = (broker) => {
       switch (code) {
         case 0: // 🍾 🍻 ✨ ☀️ repository "mounted"
           gitObserver.emit('clone_and_checkout_ok', pushInformations)
+          /*
+            # messages
+            ciObserver listening on `clone_and_checkout_ok`
+          */
           break;
         default: // Ouch 🔥 💥 ⚡️ repository not "mounted"
           gitObserver.emit('clone_and_checkout_ko', pushInformations)
+          /*
+            # messages
+            ciObserver listening on `clone_and_checkout_ko`
+          */
       }
     });
   });
