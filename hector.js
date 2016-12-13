@@ -16,14 +16,8 @@ app.use(express.static('clones'));
 
 let broker = new Broker();
 require(`./core_observers/messengerObserver`).initialize(broker);
-// plugin observers
-require(`${process.env.HECTOR_PLUGIN_PATH}/eventsObserver.js`).initialize(broker);
-require(`${process.env.HECTOR_PLUGIN_PATH}/botObserver.js`).initialize(broker);
-require(`${process.env.HECTOR_PLUGIN_PATH}/ciObserver.js`).initialize(broker);
-require(`${process.env.HECTOR_PLUGIN_PATH}/statusObserver.js`).initialize(broker);
-require(`${process.env.HECTOR_PLUGIN_PATH}/gitObserver.js`).initialize(broker); // something more generic? we can share this with other plugins
-require(`${process.env.HECTOR_PLUGIN_PATH}/executorObserver.js`).initialize(broker);
-
+// load plugin
+require(`${process.env.HECTOR_PLUGIN_PATH}/main.js`).run(broker);
 
 /*
 this route is called from the DVCS (eg GitHub)

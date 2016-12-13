@@ -9,10 +9,10 @@ CI &amp; CD with JavaScript
 
 - `chmod +x hector.js`
 - set environment variables
-  - `TOKEN_BOT_CI`
-  - `GITHUB_API_URL`
+  - `TOKEN_BOT_CI` (the bot user has to exist in the team)
+  - `GITHUB_API_URL` (if you use :octocat: .com or Enterprise)
   - `CI_HTTP_PORT`
-  - `BOT_NOTIFICATION_URL`
+  - `BOT_NOTIFICATION_URL` (only if you use bot with a chat)
   - `URL_WEB_SITE` (url of the deployed web site)
 
 ### If you use :octocat:

@@ -25,12 +25,34 @@ let initialize = (broker) => {
     eventsObserver emits on `ci_event`
   */
   ciObserver.on('push', (pushInformations) => {
+    // TODO: you have to protect master -> no direct push on master
     // update PR status
     ciObserver.emit('change_status_to_pending', pushInformations);
     /*
       # messages
       statusObserver listening on `change_status_to_pending`
     */
+  });
+
+  /*
+    # messages
+    eventsObserver emits on `ci_event`
+  */
+  ciObserver.on('pull_request_merged', (informations) => {
+    // deployment only if merge on PRODUCTION_BRANCH_NAME
+    if (informations.branch === process.env.PRODUCTION_BRANCH_NAME) {
+
+      // this will trigger a push event on the "production" branch
+      let message = `🤗 A pull request was merged on ${informations.branch} from ${informations.feature_branch}! A deployment is starting...`;
+      ciObserver.emit("message", {message: message, from:"ciObserver"});
+
+      informations.task = "deployment" // we are going to clone and check out for a deployment
+      ciObserver.emit('clone_and_checkout', informations);
+      /*
+        # messages
+        gitObserver listening on `clone_and_checkout_for_deployment`
+      */
+    }
   });
 
   /*
@@ -43,6 +65,7 @@ let initialize = (broker) => {
     // - create a temporay directory to "mount" the repository
     // - clone the repository
     // - run tests
+    pushInformations.task = "integration" // we are going to clone and check out for an integration (tests)
     ciObserver.emit('clone_and_checkout', pushInformations);
     /*
       # messages
@@ -55,24 +78,25 @@ let initialize = (broker) => {
     # messages
     gitObserver emits on `clone_and_checkout_ok`
   */
-  ciObserver.on('clone_and_checkout_ok', (pushInformations) => {
-    if (pushInformations.branch === process.env.PRODUCTION_BRANCH_NAME) {
-      // deployment mode, there was a merge on the production branch
-      ciObserver.emit('deployment', pushInformations);
-      /*
-        # messages
-        executorObserver listening on `deployment`
-        and load + execute (hector-jobs.js) deployment({})
-      */
-    } else {
-      // integration mode
-      ciObserver.emit('integration', pushInformations);
-      /*
-        # messages
-        executorObserver listening on `integration`
-        and load + execute (hector-jobs.js) integration({})
-      */
-    }
+  ciObserver.on('clone_and_checkout_ok', (informations) => {
+    // when the repository is cloned, then
+    // - we run the integration task (it's only a push)
+    // - we run deployment task (PR has been merged)
+
+    // possible values for informations.task
+    // - integration
+    // - deployment
+    ciObserver.emit(informations.task, informations);
+
+    /*
+      # messages
+      executorObserver listening on `deployment`
+      and load + execute (hector-jobs.js) deployment({})
+
+      executorObserver listening on `integration`
+      and load + execute (hector-jobs.js) integration({})
+    */
+
   });
 
   // Ouch 🔥 💥 ⚡️ repository not "mounted"
@@ -102,6 +126,9 @@ let initialize = (broker) => {
       statusObserver listening on `change_status_to_success`
     */
     ciObserver.emit("message", {message: "😀 integration 👍 [integration_ok]", from: "ciObserver"});
+
+    //TODO: here -> we can start a deployment preview
+    // how to deal with the http port ???
   });
 
   /*
@@ -110,6 +137,9 @@ let initialize = (broker) => {
   */
   ciObserver.on('deployment_ok', (pushInformations) => {
     ciObserver.emit("message", {message: "👏 🐼 ✨ 🍾 Deployment is successful!!!", from: "ciObserver"});
+
+    // add somewhere else, because, we don't make only web sites
+    // perhaps, pass an observer (messenger) to the executor ...
     ciObserver.emit("message", {message: process.env.URL_WEB_SITE, from: "ciObserver"});
 
   });

@@ -9,7 +9,7 @@ let initialize = (broker) => {
     # messages
     ciObserver emits on `clone_and_checkout`
   */
-  gitObserver.on('clone_and_checkout', (pushInformations) => {
+  gitObserver.on('clone_and_checkout', (informations) => {
 
     let random_path = uuid.v4();
     let tmp_directory = `clones/${random_path}`;
@@ -18,13 +18,13 @@ let initialize = (broker) => {
     let cmd = [
         `mkdir ${tmp_directory}; `
       , `cd ${tmp_directory}; `
-      , `git clone ${pushInformations.repository_url}; `
-      , `cd ${pushInformations.repository_name}; `
-      , `git checkout ${pushInformations.branch}; `
+      , `git clone ${informations.repository_url}; `
+      , `cd ${informations.repository_name}; `
+      , `git checkout ${informations.branch}; `
     ].join('');
 
-    pushInformations.random_path = random_path;
-    pushInformations.tmp_directory = tmp_directory;
+    informations.random_path = random_path;
+    informations.tmp_directory = tmp_directory;
 
     // === Execute the commands list ===
     // see http://bencane.com/2014/09/02/understanding-exit-codes-and-how-to-use-them-in-bash-scripts/
@@ -36,14 +36,14 @@ let initialize = (broker) => {
     exec(cmd, (code, stdout, stderr) => {
       switch (code) {
         case 0: // 🍾 🍻 ✨ ☀️ repository "mounted"
-          gitObserver.emit('clone_and_checkout_ok', pushInformations)
+          gitObserver.emit('clone_and_checkout_ok', informations)
           /*
             # messages
             ciObserver listening on `clone_and_checkout_ok`
           */
           break;
         default: // Ouch 🔥 💥 ⚡️ repository not "mounted"
-          gitObserver.emit('clone_and_checkout_ko', pushInformations)
+          gitObserver.emit('clone_and_checkout_ko', informations)
           /*
             # messages
             ciObserver listening on `clone_and_checkout_ko`

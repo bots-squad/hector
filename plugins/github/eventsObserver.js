@@ -28,8 +28,29 @@ let getPushInformations = (req) => {
   }
 }
 
+let getInformationsWhenPullRequest = (req) => {
+
+  let feature_branch = req.body.pull_request.head.ref
+  let branch = req.body.pull_request.base.ref
+  let owner = req.body.repository.owner.login;
+
+  let repository_url = req.body.repository.clone_url;
+  let repository_name = req.body.repository.name;
+
+  let return_value = {
+    feature_branch, branch, owner, repository_url, repository_name
+  }
+
+  return return_value
+}
+
+
 let isPullRequestMerged = (req) => {
   let action = req.body.action;
+  console.log("======= pull request action =======")
+  console.log(action)
+  console.log("===================================")
+
   if(action=="closed") {
     let merged = req.body.pull_request !== undefined ? req.body.pull_request.merged : undefined;
     return merged
@@ -49,18 +70,63 @@ let initialize = (broker) => {
     let event = req.headers['x-github-event'];
     switch (event) {
       case "push":
+
         let pushInformations = getPushInformations(req);
         if (pushInformations) {
-          eventsObserver.emit("push", pushInformations);
-          /*
-            # messages
-            ciObserver listening on `push`
-          */
+
+          if (pushInformations.branch === process.env.PRODUCTION_BRANCH_NAME) {
+            // https://community.hpe.com/t5/Technical-Support-Services/DevOps-Deep-Dive-Detecting-a-direct-push-to-master-in-GitHub/ba-p/6795954#.WE-JpqIrIpK
+            // push on PRODUCTION_BRANCH_NAME
+            // because:
+            // - merge of pull request
+            // - or somebody has directly push on PRODUCTION_BRANCH_NAME (eg: master 😡)
+
+            if(req.body.commits.length === 1) { // Someone is pushing one or more commits directly to PRODUCTION_BRANCH_NAME (eg: master 😡)
+              eventsObserver.emit(
+                "error",
+                {
+                  message: `😡 Someone is pushing one or more commits directly to ${process.env.PRODUCTION_BRANCH_NAME}`,
+                  from: "eventsObserver"
+                }
+              );
+              eventsObserver.emit(
+                "error",
+                {
+                  message: `😡 ${process.env.PRODUCTION_BRANCH_NAME} won't be deployed`,
+                  from: "eventsObserver"
+                }
+              );
+
+            } else { // Someone is merging a pull request to PRODUCTION_BRANCH_NAME (eg: master 😀)
+              eventsObserver.emit(
+                "message",
+                {
+                  message: `😀 Someone is merging a pull request to ${process.env.PRODUCTION_BRANCH_NAME}`,
+                  from: "eventsObserver"
+                }
+              );
+            }
+
+          } else { // everything is ok 😀
+
+            eventsObserver.emit(
+              "message",
+              {
+                message: `😀 Someone is pushing to ${pushInformations.branch}`,
+                from: "eventsObserver"
+              }
+            );
+
+            eventsObserver.emit("push", pushInformations);
+            /*
+              # messages
+              ciObserver listening on `push`
+            */
+          }
         }
         break;
       case "pull_request":
         if (isPullRequestMerged(req)) {
-          // this will trigger a push event on the "production" branch
           let message = `👍 A pull request was merged! A deployment should start now...`;
           eventsObserver.emit("message", {message: message, from:"eventsObserver"});
           /*
@@ -68,11 +134,11 @@ let initialize = (broker) => {
             botObserver listening on `message`
             messenger listening on `message` (console)
           */
-
-          eventsObserver.emit("pull_request_merged", message);
+          let informations = getInformationsWhenPullRequest(req)
+          eventsObserver.emit("pull_request_merged", informations);
           /*
             # messages
-            nobody listen on this event ... for the moment
+            ciObserver listening on `pull_request_merged`
           */
 
         }
