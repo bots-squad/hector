@@ -3,5 +3,8 @@ npm-debug.log
 .idea/
 .DS_Store
 go.js
+go-simple.js
 clones/*.txt
 clones/*.log
+RSRC.md
+TODO.md
