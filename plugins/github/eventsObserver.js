@@ -1,5 +1,18 @@
 const Observer = require(`../../core_observers/observers`).Observer;
 
+const crypto = require('crypto');
+const bufferEq = require('buffer-equal-constant-time');
+
+// "security" helpers, see: http://blog.gisonrg.me/2016/create-github-webhook-handler/
+let signData = (secret, data) => {
+	return 'sha1=' + crypto.createHmac('sha1', secret).update(data).digest('hex');
+}
+
+let checkSignature = (secret, data, signature) => {
+	return bufferEq(new Buffer(signature), new Buffer(signData(secret, data)));
+}
+
+
 let getPushInformations = (req) => {
   // get the current branch name
   let branch = req.body.ref.split("/").pop();
@@ -66,9 +79,21 @@ let initialize = (broker) => {
     broker emits on `ci_event`
   */
   eventsObserver.on('ci_event', req => {
+
+    let getEvent = () => {
+      let signature = req.headers['x-hub-signature'];
+      return checkSignature(
+        process.env.CI_SECRET, // setup the secret pass phrase in the hook settings
+        JSON.stringify(req.body),
+        signature
+      ) ? req.headers['x-github-event'] // capture GitHub event
+        : "bad_ci_secret"
+    }
+
     // capture GitHub event
     let event = req.headers['x-github-event'];
-    switch (event) {
+
+    switch (getEvent()) {
       case "push":
 
         let pushInformations = getPushInformations(req);
@@ -142,6 +167,18 @@ let initialize = (broker) => {
           */
 
         }
+        break;
+      case "bad_ci_secret":
+        let after = req.body.after;
+        let owner = req.body.repository.owner.name;
+        let statuses_url = `/repos/${owner}/${req.body.repository.name}/statuses/${after}`;
+
+        eventsObserver.emit("failure", {message: "😡 Authentication failed!", from: "eventsObserver"});
+        eventsObserver.emit("change_status_to_failure",{
+          statuses_url: statuses_url,
+          description: "Authentication failed!"
+        });
+
         break;
       default:
         eventsObserver.emit("failure", {message: "🙀 Houston? We have a problem!", from: "eventsObserver"});
