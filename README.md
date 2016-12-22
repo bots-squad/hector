@@ -56,6 +56,35 @@ module.exports = {
 }
 ```
 
+## package.json sample
+
+```
+{
+  "name": "stools",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/index.js",
+  "dependencies": {
+    "body-parser": "^1.15.2",
+    "express": "^4.14.0"
+  },
+  "scripts": {
+    "test": "./node_modules/.bin/mocha tests/**",
+    "start": "./app.js"
+  },
+  "repository": {
+    "type": "git"
+  },
+  "author": "@k33g",
+  "license": "MIT",
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "mocha": "^2.5.3"
+  }
+}
+```
+
+
 ## Dockerfile sample
 
 ```
