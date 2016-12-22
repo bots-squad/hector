@@ -5,23 +5,30 @@ CI &amp; CD with JavaScript
 > WIP :construction:
 > Next: create plugins
 
-## Setup Hector
+## Setup Hector (for use with :octocat: plugin)
 
 - `chmod +x hector.js`
 - set environment variables
-  - `TOKEN_BOT_CI` (the bot user has to exist in the team)
+  - set the environment variable `HECTOR_PLUGIN_PATH` eg: `process.env["HECTOR_PLUGIN_PATH"] = "./plugins/github"`
+  - add a webhook in GitHub settings (http://hostname:port/ci)
+    - you have to set a pass phrase (secret phrase)
+    - and then setup `CI_SECRET`
+  - `TOKEN_BOT_CI`
+    - this is a **personal access token**
+    - you can use a token from your personal settings
+    - or a token from a "bot/virtual" user (the bot/virtual user has to exist in the team of the project)
   - `GITHUB_API_URL` (if you use :octocat: .com or Enterprise)
+    - if you use www.github.com, use this value: https://api.github.com
+    - eg: if you use GitHub Enterprise http://your_domain_name/api/v3
   - `CI_HTTP_PORT`
   - `BOT_NOTIFICATION_URL` (only if you use bot with a chat)
-  - `URL_WEB_SITE` (url of the deployed web site)
+  - `URL_WEB_SITE` (url of the deployed web site, only if you need it)
+- add a file named `hector-jobs.js` to the master branch (tasks to run when something is pushed)
+- if you use docker for the deployment: add a Dockerfile to the master branch
 
-### If you use :octocat:
+## Run Hector
 
-- set the environment variable `HECTOR_PLUGIN_PATH` eg: `process.env["HECTOR_PLUGIN_PATH"] = "./plugins/github"`
-- add a webhook in GitHub settings (http://hostname:port/ci)
-- add a file named `hector-jobs.js` to the master branch
-- add a Dockerfile to the master branch
-- run hector: ./hector-deployment.js or node hector-deployment.js
+- run hector: `./hector.js` or `node hector.js`
 
 ## Job sample
 

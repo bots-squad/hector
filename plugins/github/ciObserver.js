@@ -140,8 +140,9 @@ let initialize = (broker) => {
 
     // add somewhere else, because, we don't make only web sites
     // perhaps, pass an observer (messenger) to the executor ...
-    ciObserver.emit("message", {message: process.env.URL_WEB_SITE, from: "ciObserver"});
-
+    if(process.env.URL_WEB_SITE) {
+      ciObserver.emit("message", {message: process.env.URL_WEB_SITE, from: "ciObserver"});
+    }
   });
 
   /*

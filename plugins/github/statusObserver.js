@@ -21,8 +21,8 @@ let initialize = (broker) => {
   statusObserver.on('change_status_to_pending', (pushInformations) => {
     githubCli.postData({path: pushInformations.statuses_url, data:{
         state: "pending"
-      , description: "Hi, I'm Hector :|"
-      , context: "[Hector] CI Server"
+      , description: pushInformations.description ? pushInformations.description : "Hi, I'm Hector :|"
+      , context: pushInformations.context ? pushInformations.context : "[Hector] CI Server"
       , target_url: `http://${hostname}:${process.env.CI_HTTP_PORT}`
     }})
     .then(res => {
@@ -44,12 +44,13 @@ let initialize = (broker) => {
   */
   statusObserver.on('change_status_to_failure', (pushInformations) => {
     // update status
-    githubCli.postData({path: pushInformations.statuses_url, data:{
+    let data = {
         state: "failure"
-      , description: "Hi, I'm Hector :("
-      , context: "[Hector] CI Server"
+      , description: pushInformations.description ? pushInformations.description : "Hi, I'm Hector :("
+      , context: pushInformations.context ? pushInformations.context : "[Hector] CI Server"
       , target_url: `http://${hostname}:${process.env.CI_HTTP_PORT}`
-    }});
+    }
+    githubCli.postData({path: pushInformations.statuses_url, data: data});
   });
 
   /*
@@ -60,8 +61,8 @@ let initialize = (broker) => {
     // update status
     githubCli.postData({path: pushInformations.statuses_url, data:{
         state: "success"
-      , description: "Hi, I'm Hector :)"
-      , context: "[Hector] CI Server"
+      , description: pushInformations.description ? pushInformations.description : "Hi, I'm Hector :)"
+      , context: pushInformations.context ? pushInformations.context : "[Hector] CI Server"
       , target_url: `http://${hostname}:${process.env.CI_HTTP_PORT}/${pushInformations.random_path}-stdout.log.txt`
     }});
   });
@@ -74,8 +75,8 @@ let initialize = (broker) => {
     // update status
     githubCli.postData({path: pushInformations.statuses_url, data:{
         state: "error"
-      , description: "Hi, I'm Hector :("
-      , context: "[Hector] CI Server"
+        , description: pushInformations.description ? pushInformations.description : "Hi, I'm Hector :("
+        , context: pushInformations.context ? pushInformations.context : "[Hector] CI Server"
       , target_url: `http://${hostname}:${process.env.CI_HTTP_PORT}/${pushInformations.random_path}-stdout.log.txt`
     }});
   });
