@@ -91,7 +91,7 @@ let initialize = (broker) => {
     }
 
     // capture GitHub event
-    let event = req.headers['x-github-event'];
+    //let event = req.headers['x-github-event'];
 
     switch (getEvent()) {
       case "push":
@@ -181,7 +181,7 @@ let initialize = (broker) => {
 
         break;
       default:
-        eventsObserver.emit("failure", {message: "🙀 Houston? We have a problem!", from: "eventsObserver"});
+        eventsObserver.emit("event", {message: req.headers['x-github-event'], from: "eventsObserver"});
         /*
           # messages
 
