@@ -16,12 +16,12 @@ let checkSignature = (secret, data, signature) => {
 let getPushInformations = (req) => {
   // get the current branch name
   let branch = req.body.ref.split("/").pop();
-  if(req.body.deleted == false && branch!=="gh-pages") {
+  if((req.body.deleted === false || req.body.deleted === undefined) && branch!=="gh-pages") {
     // === get data from the `PushEvent` payload
     // get the SHA (Secure Hash Algorithm) of the most recent commit on ref after the push
     // see https://developer.github.com/v3/activity/events/types/#events-api-payload-22
     let after = req.body.after;
-    let owner = req.body.repository.owner.name;
+    let owner = req.body.repository.owner.name === undefined ? req.body.repository.owner.login : req.body.repository.owner.name;
 
     // generate the url that will be used to create a status:
     //  "The Status API allows external services to mark commits with a success, failure, error, or pending state"
